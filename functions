@@ -1,0 +1,226 @@
+//Autor: Fagenr Farias;
+//versão de teste.
+
+//FUNÇÃO PARA IMPORTAR MATEMATICA
+function filtrarDadosAlunosPorConfiguracaoMT() {
+  // -- A função carrega todos os dados dos 9º anos da planilha do Dom Timóteo, uma vez que é nessa planilha q se encontra a base de dados dos alunos.
+  // -- Os alunos serão carregados através do filtro de série e matéria.
+  var ssDestino = SpreadsheetApp.getActiveSpreadsheet(); // planilha ativa
+  var materiaConfig = "MT"; // Lê o nome da Escola
+  var serieConfig = "9º_ANO"; // Lê a Série/ano
+
+  var ssFonte = SpreadsheetApp.openById('1m5__g5lz36JS5wyJBFqph_v-XBT0OOylR0u-QVYWmY4'); // Substitua ID_DA_PLANILHA_FONTE pelo ID real da sua planilha fonte
+  var sheetFonte = ssFonte.getSheetByName('CONSOLIDAR'); // Substitua NOME_DA_ABA pelo nome real da aba que contém os dados
+  var dados = sheetFonte.getDataRange().getValues(); // Pega todos os dados da aba fonte
+  var COLUNA_MATERIA = 6; // Supondo que 'Materia' esteja na coluna B (índice 1)
+  var COLUNA_SERIE = 2; // Supondo que 'Série' esteja na coluna C (índice 2)
+
+  var dadosFiltrados = dados.filter(function(row) {
+    return row[COLUNA_MATERIA] == materiaConfig && row[COLUNA_SERIE] == serieConfig;
+  });
+  
+  if (dadosFiltrados.length > 0) {
+    //var sheetDestino = ssDestino.getSheetByName('teste'); // Substitua NOME_DA_ABA_DESTINO pelo nome real da aba de destino
+    var sheetDestino = ssDestino.getActiveSheet();
+
+    sheetDestino.getRange(5, 1, dadosFiltrados.length, dadosFiltrados[0].length).setValues(dadosFiltrados); // Escreve os dados filtrados na planilha de destino, começando da linha 5
+  } else {
+    Logger.log('Nenhum dado encontrado com os critérios especificados.');
+  }
+}
+
+//FUNÇÃO PARA IMPORTAR LINGUA PORTUGUESA
+function filtrarDadosAlunosPorConfiguracaoLP() {
+  // -- A função carrega todos os dados dos 9º anos da planilha do Dom Timóteo, uma vez que é nessa planilha q se encontra a base de dados dos alunos.
+  // -- Os alunos serão carregados através do filtro de série e matéria.
+  var ssDestino = SpreadsheetApp.getActiveSpreadsheet(); // planilha ativa
+  var materiaConfig = "LP"; // Lê o nome da Escola
+  var serieConfig = "9º_ANO"; // Lê a Série/ano
+
+  var ssFonte = SpreadsheetApp.openById('1m5__g5lz36JS5wyJBFqph_v-XBT0OOylR0u-QVYWmY4'); // Substitua ID_DA_PLANILHA_FONTE pelo ID real da sua planilha fonte
+  var sheetFonte = ssFonte.getSheetByName('CONSOLIDAR'); // Substitua NOME_DA_ABA pelo nome real da aba que contém os dados
+  var dados = sheetFonte.getDataRange().getValues(); // Pega todos os dados da aba fonte
+  var COLUNA_MATERIA = 6; // Supondo que 'Materia' esteja na coluna B (índice 1)
+  var COLUNA_SERIE = 2; // Supondo que 'Série' esteja na coluna C (índice 2)
+
+  var dadosFiltrados = dados.filter(function(row) {
+    return row[COLUNA_MATERIA] == materiaConfig && row[COLUNA_SERIE] == serieConfig;
+  });
+  
+  if (dadosFiltrados.length > 0) {
+    //var sheetDestino = ssDestino.getSheetByName('teste'); // Substitua NOME_DA_ABA_DESTINO pelo nome real da aba de destino
+    var sheetDestino = ssDestino.getActiveSheet();
+
+    sheetDestino.getRange(5, 1, dadosFiltrados.length, dadosFiltrados[0].length).setValues(dadosFiltrados); // Escreve os dados filtrados na planilha de destino, começando da linha 5
+  } else {
+    Logger.log('Nenhum dado encontrado com os critérios especificados.');
+  }
+}
+
+function clear(){
+  var sheetAtiva = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet()
+  sheetAtiva.getRange(5, 1, sheetAtiva.getLastRow(), sheetAtiva.getLastColumn()).clearContent();
+}
+
+function totalizarAcertosEPercentualEClassificarOLD() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getActiveSheet();
+  var ultimaLinha = sheet.getLastRow();
+  var totalDeQuestoes = 20; // Substitua pelo número total de questões
+  var rangeGabarito = sheet.getRange("L3:AE3");
+  var gabarito = rangeGabarito.getValues()[0];
+  var rangeRespostas = sheet.getRange("L5:AE5" + sheet.getLastRow());
+  var respostas = rangeRespostas.getValues();
+
+  var totalAcertos = [];
+  var percentuaisAcertos = [];
+  var classificacoes = [];
+  var colunaInicial = 5;
+
+  for (var i = 0; i < respostas.length; i++) {
+    var acertos = 0;
+    for (var j = 0; j < gabarito.length; j++) {
+      if (respostas[i][j] === gabarito[j]) {
+        acertos++;
+      }
+    }
+    var percentual = (acertos / totalDeQuestoes) * 100;
+    totalAcertos.push([acertos]);
+    percentuaisAcertos.push([percentual.toFixed(2)]);
+
+    // Classificar o aluno baseado no percentual de acertos
+    // Aqui deverá ser inserida a calibragem do calculo de proficiência
+    var classificacao;
+    if (percentual >= 81) {
+      classificacao = 'ADEQUADO';
+    } else if (percentual >= 61) {
+      classificacao = 'INTERMEDIÁRIO';
+    } else if (percentual >= 41) {
+      classificacao = 'CRÍTICO';
+    } else {
+      classificacao = 'MUITO CRÍTICO';
+    }
+    classificacoes.push([classificacao]);
+  }
+
+  var colunaQtAcertos = 9; // Ajuste a coluna onde "QT_ACER." está, se necessário
+  var colunaPercAcertos = 10; // Ajuste a coluna onde "%_ACER." está, se necessário
+  var colunaClassificacao = 11; // Ajuste a coluna onde "PROFIC. VERIFICADA" está, se necessário
+
+  sheet.getRange(colunaInicial, colunaQtAcertos, totalAcertos.length, 1).setValues(totalAcertos);
+  sheet.getRange(colunaInicial, colunaPercAcertos, percentuaisAcertos.length, 1).setValues(percentuaisAcertos);
+  sheet.getRange(colunaInicial, colunaClassificacao, classificacoes.length, 1).setValues(classificacoes);
+}
+
+function totalizarAcertosEPercentualEClassificarPT() {
+  var sheet = SpreadsheetApp.getActiveSheet();
+  // Supõe-se que o gabarito esteja da coluna L até AJ na linha 2
+  var rangeGabarito = sheet.getRange("L3:AK3"); 
+  var gabarito = rangeGabarito.getValues()[0];
+  var totalDeQuestoes = gabarito.length; // Número total de questões é o número de células no gabarito
+  var dadosAlunos = getDadosAlunos(sheet, totalDeQuestoes);
+
+  dadosAlunos.forEach(function(aluno) {
+    if (aluno.id) { // Certifica-se de que há um ID de aluno para evitar linhas vazias
+      var acertos = calcularAcertos(aluno.respostas, gabarito);
+      var percentual = calcularPercentual(acertos, totalDeQuestoes);
+      var classificacao = getClassificacao(percentual);
+      sheet.getRange(aluno.linha, 9).setValue(acertos); // QT_ACER.
+
+      // o percentual foi ajustado pelo método toFixed e parassa 0 como argumento para que seja feito um 
+      //arredondamento para cima acima de .50 e para baixo abaixo de .50
+      sheet.getRange(aluno.linha, 10).setValue(percentual.toFixed(0)); // %_ACER.
+      sheet.getRange(aluno.linha, 11).setValue(classificacao); // PROFIC. VERIFICADA
+    }
+  });
+}
+
+function totalizarAcertosEPercentualEClassificarMT() {
+  var sheet = SpreadsheetApp.getActiveSheet();
+  // Supõe-se que o gabarito esteja da coluna L até AJ na linha 2
+  var rangeGabarito = sheet.getRange("L3:AE3"); 
+  var gabarito = rangeGabarito.getValues()[0];
+  var totalDeQuestoes = gabarito.length; // Número total de questões é o número de células no gabarito
+  var dadosAlunos = getDadosAlunos(sheet, totalDeQuestoes);
+
+  dadosAlunos.forEach(function(aluno) {
+    if (aluno.id) { // Certifica-se de que há um ID de aluno para evitar linhas vazias
+      var acertos = calcularAcertos(aluno.respostas, gabarito);
+      var percentual = calcularPercentual(acertos, totalDeQuestoes);
+      var classificacao = getClassificacao(percentual);
+      sheet.getRange(aluno.linha, 9).setValue(acertos); // QT_ACER.
+      sheet.getRange(aluno.linha, 10).setValue(percentual.toFixed(0)); // %_ACER.
+      sheet.getRange(aluno.linha, 11).setValue(classificacao); // PROFIC. VERIFICADA
+    }
+  });
+}
+
+function getDadosAlunos(sheet, totalDeQuestoes) {
+  var startRow = 5; // Ajuste se o cabeçalho for diferente
+  var lastRow = sheet.getLastRow();
+  var dadosAlunos = [];
+
+  for (var i = startRow; i <= lastRow; i++) {
+    var idAluno = sheet.getRange(i, 1).getValue(); // ID do aluno na coluna A
+    if (idAluno) { // Se houver um ID, então leia as respostas
+      var respostas = sheet.getRange(i, 12, 1, totalDeQuestoes).getValues()[0]; // As respostas começam na coluna L
+      dadosAlunos.push({ linha: i, id: idAluno, respostas: respostas });
+    }
+  }
+
+  return dadosAlunos;
+}
+
+function calcularAcertos(respostas, gabarito) {
+  return respostas.reduce(function(acertos, resposta, index) {
+    return acertos + (resposta === gabarito[index] ? 1 : 0);
+  }, 0);
+}
+
+function calcularPercentual(acertos, totalDeQuestoes) {
+  return (acertos / totalDeQuestoes) * 100;
+}
+
+// função de calibragem, aki podemos calibrar os percentuais e aplicar metodologias distintas.
+// a função recebe um percentual como argumento e retorna o nivel.
+function getClassificacao(percentual) {
+  if (percentual >= 81) {
+    return 'ADEQUADO';
+  } else if (percentual >= 61) {
+    return 'INTERMEDIÁRIO';
+  } else if (percentual >= 41) {
+    return 'CRÍTICO';
+  } else {
+    return 'MUITO CRÍTICO';
+  }
+}
+
+//a função consolida dados de todas as turmas e com os seus respectivos gabaritos
+function consolidar() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheetConsolidada = ss.getSheetByName("CONSOLIDADO");
+  if (!sheetConsolidada) {
+    sheetConsolidada = ss.insertSheet("CONSOLIDADO"); // Cria a planilha se não existir
+  }
+  // Presume-se que a linha 1 da "CONSOLIDAR" tem cabeçalho, então começamos a limpar a partir da linha 2.
+  sheetConsolidada.getRange('A2:AG1000').clear(); // Limpa os dados existentes, ajuste o 'Z' para a última coluna que seus dados possam ter
+  
+  var sheets = ss.getSheets();
+  for (var i = 0; i < sheets.length; i++) {
+    var sheet = sheets[i];
+    if (sheet.getName() !== "CONSOLIDADO") { // Evita ler dados da planilha consolidado 
+      var lastRow = sheet.getLastRow();
+      if (lastRow > 3) { // Verifica se existem mais de três linhas de dados
+        // Pula os cabeçalhos das outras abas começando a leitura da linha 4
+        var data = sheet.getRange(5, 1, lastRow - 3, sheet.getLastColumn()).getValues();
+        // Encontra a próxima linha vazia na aba "CONSOLIDADO" começando da linha 2
+        var nextEmptyRow = sheetConsolidada.getLastRow() + 1;
+        if (nextEmptyRow < 2) {
+          nextEmptyRow = 2; // Assegura que a gravação comece na linha 2 se "CONSOLIDADO" estiver vazia
+        }
+        // Grava os dados na aba "CONSOLIDADO"
+        sheetConsolidada.getRange(nextEmptyRow, 1, data.length, data[0].length).setValues(data);
+      }
+    }
+  }
+}
